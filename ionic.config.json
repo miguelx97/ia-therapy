@@ -1,0 +1,7 @@
+{
+  "name": "ia-therapy",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
