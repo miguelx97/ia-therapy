@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>
+      <div class="chat-header">
+        <ion-avatar>
+          <img src="https://gravatar.com/avatar/default?d=mp" alt="User avatar">
+        </ion-avatar>
+        <div class="user-info">
+          <div>{{chatRoom.name}}</div>
+          <div class="online-status">{{chatRoom.description}}</div>
+        </div>
+      </div>
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="call-outline"></ion-icon>
+      </ion-button>
+      <ion-button>
+        <ion-icon name="videocam-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="chat-container">
+    <div class="messages-container">
+      <div *ngFor="let message of chatRoom.messages"
+        [class]="'message ' + (message.sender === 'user' ? 'sent' : 'received')">
+        <div class="message-bubble">{{message.content}}</div>
+        <div class="message-meta">{{message.getFormattedTimestamp()}}</div>
+      </div>
+    </div>
+
+    <!-- Chat input area -->
+    <div class="chat-input-container">
+      <div class="input-wrapper">
+        <ion-textarea [(ngModel)]="newMessage" placeholder="Type a message..." class="message-input" auto-grow="true"
+          rows="1" (keyup.enter)="sendMessage()">
+        </ion-textarea>
+        <ion-button class="send-button" (click)="sendMessage()">
+          <ion-icon name="send"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

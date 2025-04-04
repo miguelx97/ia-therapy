@@ -1,2 +1,25 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+
+// Chat Application Color Variables
+:root {
+  // Primary colors
+  --chat-primary: #007aff;
+  --chat-primary-light: rgba(0, 122, 255, 0.1);
+  --chat-primary-dark: #0056b3;
+
+  // Background colors
+  --chat-bg-main: #f5f5f5;
+  --chat-bg-light: #ffffff;
+  --chat-bg-input: #f5f5f5;
+
+  // Text colors
+  --chat-text-primary: #333333;
+  --chat-text-secondary: #8e8e93;
+  --chat-text-light: #ffffff;
+
+  // Utility colors
+  --chat-border: #e0e0e0;
+  --chat-shadow: rgba(0, 0, 0, 0.1);
+  --chat-overlay: rgba(0, 0, 0, 0.05);
+}
