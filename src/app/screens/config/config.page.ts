@@ -15,8 +15,13 @@ import {
   IonRadio,
   IonListHeader, IonImg
 } from '@ionic/angular/standalone';
-import { UserService } from '../../services/user.service';
 import { ModalController } from '@ionic/angular/standalone';
+import { AuthtService } from 'src/app/services/auth.service';
+import { Chatroom } from 'src/app/models/chatroom';
+import { User } from 'firebase/auth';
+import { UserInfo } from 'src/app/models/userInfo';
+import { UserService } from 'src/app/services/user.service';
+import { Therapist } from 'src/app/models/therapisrt';
 
 @Component({
   selector: 'app-config',
@@ -42,38 +47,51 @@ import { ModalController } from '@ionic/angular/standalone';
 })
 export class ConfigPage implements OnInit {
   selectedTherapist: number = 1;
-  userDescription: string = '';
-  talkAbout: string = '';
+  userName: string = '';
+  userContext: string = '';
 
-  therapists = [
-    { id: 1, image: 'assets/therapists/therapist_1.webp', name: 'Dr. Sarah Johnson' },
-    { id: 2, image: 'assets/therapists/therapist_2.webp', name: 'Dr. Michael Chen' },
-    { id: 3, image: 'assets/therapists/therapist_3.webp', name: 'Dr. Emily Williams' }
+  therapists: Therapist[] = [
   ];
 
   constructor(
-    private userService: UserService,
-    private modalCtrl: ModalController
+    private authSvc: AuthtService,
+    private modalCtrl: ModalController,
+    private userService: UserService
   ) { }
 
   ngOnInit() {
+    this.loadTherapists();
+  }
+  private async loadTherapists() {
+    const response = await fetch('assets/therapists.json').then(res => res.json());
+    this.therapists = response.therapists;
+    console.log("🚀 ~ ConfigPage ~ loadTherapists ~ this.therapists:", this.therapists)
   }
 
   async onSubmit() {
     try {
       // Ensure user is authenticated anonymously
-      const user = await this.userService.ensureAnonymousAuth();
+      const user: User = await this.authSvc.ensureAnonymousAuth();
 
-      const configData = {
-        selectedTherapist: this.selectedTherapist,
-        userDescription: this.userDescription,
-        talkAbout: this.talkAbout,
-        userId: user.uid
-      };
+      const chatRoom = new Chatroom(
+        this.therapists[this.selectedTherapist - 1].id,
+        'Your AI therapist',
+        this.userContext
+      );
 
-      console.log('Configuration saved:', configData);
+      const userInfo = new UserInfo(
+        user.uid,
+        this.userName,
+        user.email ?? '',
+        [chatRoom]
+      );
+
+      // Save user info to Firestore
+      await this.userService.saveUserInfo(userInfo);
+
+      console.log('Configuration saved:', chatRoom);
       // Close the modal after successful submission
-      this.modalCtrl.dismiss(configData);
+      this.modalCtrl.dismiss(chatRoom);
 
     } catch (error) {
       console.error('Error during configuration submission:', error);

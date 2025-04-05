@@ -25,14 +25,19 @@
       </ion-radio-group>
 
       <ion-item>
+        <ion-label position="stacked">Your name (or nickname)</ion-label>
+        <ion-input [(ngModel)]="userName" name="description" placeholder="How would you like to be called?"></ion-input>
+      </ion-item>
+
+      <!-- <ion-item>
         <ion-label position="stacked">Describe yourself</ion-label>
         <ion-textarea [(ngModel)]="userDescription" name="description" placeholder="Tell us about yourself..."
           [rows]="4"></ion-textarea>
-      </ion-item>
+      </ion-item> -->
 
       <ion-item>
-        <ion-label position="stacked">What would you like to talk about?</ion-label>
-        <ion-textarea [(ngModel)]="talkAbout" name="talkAbout" placeholder="Share what's on your mind..."
+        <ion-label position="stacked">Your context</ion-label>
+        <ion-textarea [(ngModel)]="userContext" name="talkAbout" placeholder="Help me understand you better..."
           [rows]="4"></ion-textarea>
       </ion-item>
     </ion-list>

@@ -1,34 +1,33 @@
-import { Injectable } from '@angular/core';
-import { getAuth, signInAnonymously, User } from '@angular/fire/auth';
-import { BehaviorSubject } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Firestore, doc, setDoc } from '@angular/fire/firestore';
+import { UserInfo } from '../models/userInfo';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private auth = getAuth();
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor() {
-    // Listen to auth state changes
-    this.auth.onAuthStateChanged(user => {
-      this.currentUserSubject.next(user);
-    });
-  }
+  private firestore = inject(Firestore);
 
-  async ensureAnonymousAuth(): Promise<User> {
-    const currentUser = this.auth.currentUser;
-
-    if (currentUser) {
-      return currentUser;
-    }
-
+  /**
+   * Saves or updates user information in Firestore
+   * @param userInfo The user information to save
+   * @returns Promise that resolves when the save is complete
+   */
+  async saveUserInfo(userInfo: UserInfo): Promise<void> {
     try {
-      const credential = await signInAnonymously(this.auth);
-      return credential.user;
+      if (!userInfo.id) {
+        throw new Error('User ID is required');
+      }
+
+      const userDocRef = doc(this.firestore, `users/${userInfo.id}`);
+      await setDoc(userDocRef, {
+        name: userInfo.name,
+        email: userInfo.email,
+        chatRooms: userInfo.chatRooms?.map(chatRoom => chatRoom.getObject()) || []
+      }, { merge: true });
     } catch (error) {
-      console.error('Error signing in anonymously:', error);
+      console.error('Error saving user info:', error);
       throw error;
     }
   }

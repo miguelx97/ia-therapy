@@ -1,28 +1,22 @@
 import { Message } from './message';
 
-export class ChatContext {
-    constructor(
-        public systemPrompt: string
-    ) { }
-}
-
 export class Chatroom {
     readonly id: string;
-    name: string;
-    description: string;
+    readonly description: string;
+    readonly therapistId: number;
+    readonly userContext: string;
     readonly createdAt: Date;
     private _updatedAt: Date;
     private _messages: Message[];
-    context: ChatContext;
 
-    constructor(name: string, description: string, systemPrompt: string) {
+    constructor(therapistId: number, description: string, userContext: string) {
         this.id = crypto.randomUUID();
-        this.name = name;
+        this.therapistId = therapistId;
         this.description = description;
+        this.userContext = userContext;
         this.createdAt = new Date();
         this._updatedAt = new Date();
         this._messages = [];
-        this.context = new ChatContext(systemPrompt);
     }
 
     get messages(): Message[] {
@@ -34,18 +28,7 @@ export class Chatroom {
         this._updatedAt = new Date();
     }
 
-    updateName(newName: string): void {
-        this.name = newName;
-        this._updatedAt = new Date();
-    }
-
-    updateContext(systemPrompt: string): void {
-        this.context = new ChatContext(systemPrompt);
-        this._updatedAt = new Date();
+    getObject(): Chatroom {
+        return Object.assign({}, this);
     }
 }
-
-// Factory function if needed
-export const createChatroom = (name: string, description: string, systemPrompt: string): Chatroom => {
-    return new Chatroom(name, description, systemPrompt);
-};

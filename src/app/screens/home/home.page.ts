@@ -7,7 +7,7 @@ import { Message } from 'src/app/models/message';
 import { Chatroom } from 'src/app/models/chatroom';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ApiService } from 'src/app/services/api.service';
+import { ChatService } from 'src/app/services/chat.service';
 import { MarkdownPipe } from 'src/app/pipes/markdown.pipe';
 import { retry } from 'rxjs';
 import { ModalController } from '@ionic/angular/standalone';
@@ -27,20 +27,22 @@ export class HomePage implements OnInit {
     addIcons({ sendOutline, colorFilterOutline });
   }
 
-  apiSvc = inject(ApiService);
+  apiSvc = inject(ChatService);
+
+  public chatRoom: Chatroom | undefined;
+  public header: { title: string, description: string } = { title: 'IA Therapy', description: 'Your personal therapist' };
 
   ngOnInit(): void {
+    this.chatRoom = new Chatroom(
+      1,
+      'IA Therapy',
+      'Default user',
+    );
   }
 
   public newMessage: string = '';
   public isTyping: boolean = false;
 
-  // sk-541381ddc5f0460bab1ee79367870d3f
-  chatRoom: Chatroom = new Chatroom(
-    'IA Therapy',
-    'Your personal therapist',
-    'You are a helpful assistant that can answer questions and help with tasks.'
-  );
 
   async openImageViewer() {
     const modal = await this.modalCtrl.create({
@@ -58,15 +60,22 @@ export class HomePage implements OnInit {
       return;
     }
     const message = new Message(this.newMessage, 'user');
-    this.chatRoom.addMessage(message);
+    this.chatRoom!.addMessage(message);
     this.isTyping = true;
     this.apiSvc.getAiResponse(this.newMessage).then((response) => {
       const aiMessage = new Message(response, 'ai');
-      this.chatRoom.addMessage(aiMessage);
+      this.chatRoom!.addMessage(aiMessage);
       this.isTyping = false;
     });
 
     this.newMessage = '';
+  }
+
+  public onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && event.shiftKey) {
+      event.preventDefault();
+      this.sendMessage();
+    }
   }
 
   async openConfig() {

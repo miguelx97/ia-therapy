@@ -12,8 +12,8 @@
           <img src="assets/therapists/therapist_1.webp" alt="Therapist avatar" (click)="openImageViewer()">
         </ion-avatar>
         <div class="user-info">
-          <div>{{chatRoom.name}}</div>
-          <div class="online-status">{{chatRoom.description}}</div>
+          <div>{{header.title}}</div>
+          <div class="online-status">{{header.description}}</div>
         </div>
       </div>
     </ion-title>
@@ -30,7 +30,7 @@
 <ion-content>
   <div class="chat-container">
     <div class="messages-container">
-      <div *ngFor="let message of chatRoom.messages"
+      <div *ngFor="let message of chatRoom?.messages"
         [class]="'message ' + (message.sender === 'user' ? 'sent' : 'received')">
         <div class="message-bubble" [innerHTML]="message.content | markdown | async"></div>
         <div class="message-meta">{{message.getFormattedTimestamp()}}</div>
@@ -49,8 +49,8 @@
     <!-- Chat input area -->
     <div class="chat-input-container">
       <div class="input-wrapper">
-        <ion-textarea [(ngModel)]="newMessage" placeholder="Type a message..." class="message-input" auto-grow="true"
-          rows="1">
+        <ion-textarea [(ngModel)]="newMessage" placeholder="Share what's on your mind..." class="message-input"
+          auto-grow="true" rows="1" (keydown)="onKeyDown($event)">
         </ion-textarea>
         <ion-button class="send-button" (click)="sendMessage()">
           <ion-icon name="send-outline"></ion-icon>

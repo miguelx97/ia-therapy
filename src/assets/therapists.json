@@ -1,0 +1,19 @@
+{
+  "therapists": [
+    {
+      "id": 1,
+      "image": "assets/therapists/therapist_1.webp",
+      "name": "Edward Johnson"
+    },
+    {
+      "id": 2,
+      "image": "assets/therapists/therapist_2.webp",
+      "name": "Emily Williams"
+    },
+    {
+      "id": 3,
+      "image": "assets/therapists/therapist_3.webp",
+      "name": "John Caldwell"
+    }
+  ]
+}
