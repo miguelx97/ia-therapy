@@ -1,0 +1,44 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Your preferences</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <form (ngSubmit)="onSubmit()">
+    <ion-list>
+      <ion-radio-group [(ngModel)]="selectedTherapist" name="therapist">
+        <ion-list-header>
+          <ion-label>Choose your therapist</ion-label>
+        </ion-list-header>
+
+        <div class="therapist-grid">
+          <ion-item *ngFor="let therapist of therapists" class="therapist-item">
+            <ion-radio [value]="therapist.id">
+              <div class="therapist-card">
+                <ion-img [src]="therapist.image" [alt]="therapist.name" />
+                <ion-label>{{therapist.name}}</ion-label>
+              </div>
+            </ion-radio>
+          </ion-item>
+        </div>
+      </ion-radio-group>
+
+      <ion-item>
+        <ion-label position="stacked">Describe yourself</ion-label>
+        <ion-textarea [(ngModel)]="userDescription" name="description" placeholder="Tell us about yourself..."
+          [rows]="4"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">What would you like to talk about?</ion-label>
+        <ion-textarea [(ngModel)]="talkAbout" name="talkAbout" placeholder="Share what's on your mind..."
+          [rows]="4"></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding">
+      <ion-button expand="block" type="submit">Confirm</ion-button>
+    </div>
+  </form>
+</ion-content>

@@ -9,7 +9,7 @@
     <ion-title>
       <div class="chat-header">
         <ion-avatar>
-          <img src="assets/therapist.webp" alt="Therapist avatar">
+          <img src="assets/therapists/therapist_1.webp" alt="Therapist avatar" (click)="openImageViewer()">
         </ion-avatar>
         <div class="user-info">
           <div>{{chatRoom.name}}</div>
@@ -19,6 +19,10 @@
     </ion-title>
 
     <ion-buttons slot="end">
+      <ion-button (click)="openConfig()">
+        <ion-label>Preferences</ion-label>
+        <ion-icon name="color-filter-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -49,7 +53,7 @@
           rows="1">
         </ion-textarea>
         <ion-button class="send-button" (click)="sendMessage()">
-          <ion-icon name="send"></ion-icon>
+          <ion-icon name="send-outline"></ion-icon>
         </ion-button>
       </div>
     </div>

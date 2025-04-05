@@ -10,4 +10,8 @@ export const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full',
   },
+  {
+    path: 'config',
+    loadComponent: () => import('./screens/config/config.page').then( m => m.ConfigPage)
+  },
 ];
