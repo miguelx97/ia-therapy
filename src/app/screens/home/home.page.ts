@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { send } from 'ionicons/icons';
@@ -7,6 +7,7 @@ import { Message } from 'src/app/models/message';
 import { Chatroom } from 'src/app/models/chatroom';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-home',
@@ -16,9 +17,15 @@ import { CommonModule } from '@angular/common';
   imports: [IonicModule, FormsModule, CommonModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class HomePage {
+export class HomePage implements OnInit {
   constructor() {
     addIcons({ send });
+  }
+
+  apiSvc = inject(ApiService);
+
+  ngOnInit(): void {
+    this.apiSvc.getHelloWorld();
   }
 
   public newMessage: string = '';

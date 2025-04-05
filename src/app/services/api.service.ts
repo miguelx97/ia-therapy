@@ -1,16 +1,27 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { initializeApp } from 'firebase/app';
+import { getFunctions, httpsCallable } from '@angular/fire/functions';
+
+
+const app = initializeApp(environment.firebase);
+const functions = getFunctions(app, 'us-central1');
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly firebaseFunctionUrl = 'YOUR_FIREBASE_FUNCTION_URL';
 
-  constructor(private http: HttpClient) { }
+  constructor() { }
 
-  getHelloWorld(): Observable<any> {
-    return this.http.get(this.firebaseFunctionUrl);
+  initializeFirebase(): void {
+  }
+
+  getHelloWorld(): Promise<any> {
+    const callable = httpsCallable(functions, 'helloWorld');
+    return callable().then((result) => {
+      console.log(result.data);
+      return result.data;
+    });
   }
 }
