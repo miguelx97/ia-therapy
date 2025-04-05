@@ -4,12 +4,18 @@ export class UserInfo {
     id?: string;
     name?: string;
     email?: string;
-    chatRooms?: Chatroom[];
+    selectedChatRoom?: number;
 
-    constructor(id: string, name: string, email: string, chatRooms: Chatroom[]) {
+    constructor(name: string, id?: string) {
         this.id = id;
         this.name = name;
-        this.email = email;
-        this.chatRooms = chatRooms;
+        this.email = '';
+        this.selectedChatRoom = 1;
+    }
+
+    getObject(): UserInfo {
+        const userInfo = Object.assign({}, this);
+        delete userInfo.id;
+        return userInfo;
     }
 }

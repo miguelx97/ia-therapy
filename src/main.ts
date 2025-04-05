@@ -10,6 +10,7 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
+import { provideHttpClient } from '@angular/common/http';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -20,5 +21,6 @@ bootstrapApplication(AppComponent, {
     provideFunctions(() => getFunctions()),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
+    provideHttpClient(),
   ],
 });

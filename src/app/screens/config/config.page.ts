@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,13 +16,14 @@ import {
   IonListHeader, IonImg
 } from '@ionic/angular/standalone';
 import { ModalController } from '@ionic/angular/standalone';
+import { ChatService } from 'src/app/services/chat.service';
 import { AuthtService } from 'src/app/services/auth.service';
 import { Chatroom } from 'src/app/models/chatroom';
 import { User } from 'firebase/auth';
 import { UserInfo } from 'src/app/models/userInfo';
 import { UserService } from 'src/app/services/user.service';
 import { Therapist } from 'src/app/models/therapisrt';
-
+import { TherapistsService } from 'src/app/services/therapists.service';
 @Component({
   selector: 'app-config',
   templateUrl: './config.page.html',
@@ -53,41 +54,34 @@ export class ConfigPage implements OnInit {
   therapists: Therapist[] = [
   ];
 
+  chatSvc = inject(ChatService);
+  userSvc = inject(UserService);
+  therapistSvc = inject(TherapistsService);
   constructor(
-    private authSvc: AuthtService,
     private modalCtrl: ModalController,
-    private userService: UserService
   ) { }
 
-  ngOnInit() {
-    this.loadTherapists();
-  }
-  private async loadTherapists() {
-    const response = await fetch('assets/therapists.json').then(res => res.json());
-    this.therapists = response.therapists;
-    console.log("🚀 ~ ConfigPage ~ loadTherapists ~ this.therapists:", this.therapists)
+  async ngOnInit() {
+    this.therapists = await this.therapistSvc.getTherapists();
   }
 
   async onSubmit() {
     try {
-      // Ensure user is authenticated anonymously
-      const user: User = await this.authSvc.ensureAnonymousAuth();
+
+      const userInfo = new UserInfo(
+        this.userName
+      );
+
+      // Save user info to Firestore
+      const uid = await this.userSvc.saveUserInfo(userInfo);
 
       const chatRoom = new Chatroom(
         this.therapists[this.selectedTherapist - 1].id,
         'Your AI therapist',
-        this.userContext
+        this.userContext,
+        uid
       );
-
-      const userInfo = new UserInfo(
-        user.uid,
-        this.userName,
-        user.email ?? '',
-        [chatRoom]
-      );
-
-      // Save user info to Firestore
-      await this.userService.saveUserInfo(userInfo);
+      await this.chatSvc.saveChatRoom(chatRoom);
 
       console.log('Configuration saved:', chatRoom);
       // Close the modal after successful submission

@@ -1,34 +1,34 @@
 import { Message } from './message';
 
 export class Chatroom {
-    readonly id: string;
+    public id?: string;
     readonly description: string;
     readonly therapistId: number;
     readonly userContext: string;
     readonly createdAt: Date;
-    private _updatedAt: Date;
-    private _messages: Message[];
+    private updatedAt: Date;
+    public messages: Message[];
+    private userId: string;
 
-    constructor(therapistId: number, description: string, userContext: string) {
-        this.id = crypto.randomUUID();
+    constructor(therapistId: number, description: string, userContext: string, userId: string, messages: Message[] = [], id?: string) {
         this.therapistId = therapistId;
         this.description = description;
         this.userContext = userContext;
         this.createdAt = new Date();
-        this._updatedAt = new Date();
-        this._messages = [];
-    }
-
-    get messages(): Message[] {
-        return [...this._messages]; // Return a copy to prevent direct modification
+        this.updatedAt = new Date();
+        this.messages = messages;
+        this.userId = userId;
+        this.id = id;
     }
 
     addMessage(message: Message): void {
-        this._messages.push(message);
-        this._updatedAt = new Date();
+        this.messages.push(message);
+        this.updatedAt = new Date();
     }
 
     getObject(): Chatroom {
-        return Object.assign({}, this);
+        const obj = Object.assign({}, this);
+        delete obj.id;
+        return obj;
     }
 }
