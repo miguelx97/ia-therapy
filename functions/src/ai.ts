@@ -7,13 +7,15 @@ const openai = new OpenAI({
     apiKey: env.deepseekApiKey
 });
 
-export const helloWorld = onCall(async (request) => {
-    const msg = await generateText("hola");
+export const talkWithTherapist = onCall(async (request) => {
+    const { prompt } = request.data;
+    if (!prompt || typeof prompt !== 'string') {
+        throw new Error('Prompt parameter is required and must be a string');
+    }
+    const iaResponse: string | null = await generateText(prompt);
     // logger.info("Hello logs!", { structuredData: true });
     return {
-        data: {
-            msg
-        }
+        iaResponse
     };
 });
 

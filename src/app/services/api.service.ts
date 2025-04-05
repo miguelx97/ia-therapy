@@ -3,25 +3,29 @@ import { environment } from '../../environments/environment';
 import { initializeApp } from 'firebase/app';
 import { getFunctions, httpsCallable } from '@angular/fire/functions';
 
-
-const app = initializeApp(environment.firebase);
-const functions = getFunctions(app, 'us-central1');
+interface TherapistResponse {
+  iaResponse: string | null;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  constructor() { }
-
-  initializeFirebase(): void {
+  private functions: any;
+  constructor() {
+    this.initializeFirebase();
   }
 
-  getHelloWorld(): Promise<any> {
-    const callable = httpsCallable(functions, 'helloWorld');
-    return callable().then((result) => {
-      console.log(result.data);
-      return result.data;
-    });
+  initializeFirebase(): void {
+    const app = initializeApp(environment.firebase);
+    this.functions = getFunctions(app, 'us-central1');
+  }
+
+  async getAiResponse(prompt: string): Promise<string> {
+    const callable = httpsCallable<{ prompt: string }, TherapistResponse>(this.functions, 'talkWithTherapist');
+    const result = await callable({ prompt });
+    console.log("🚀 ~ ApiService ~ getAiResponse ~ result:", result);
+    return result.data.iaResponse ?? '';
   }
 }

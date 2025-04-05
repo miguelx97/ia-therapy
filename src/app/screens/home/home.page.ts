@@ -8,13 +8,15 @@ import { Chatroom } from 'src/app/models/chatroom';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from 'src/app/services/api.service';
+import { MarkdownPipe } from 'src/app/pipes/markdown.pipe';
+import { retry } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule],
+  imports: [IonicModule, FormsModule, CommonModule, MarkdownPipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit {
@@ -25,10 +27,10 @@ export class HomePage implements OnInit {
   apiSvc = inject(ApiService);
 
   ngOnInit(): void {
-    this.apiSvc.getHelloWorld();
   }
 
   public newMessage: string = '';
+  public isTyping: boolean = false;
 
   // sk-541381ddc5f0460bab1ee79367870d3f
   chatRoom: Chatroom = new Chatroom(
@@ -41,9 +43,14 @@ export class HomePage implements OnInit {
     if (this.newMessage.trim() === '') {
       return;
     }
-
     const message = new Message(this.newMessage, 'user');
     this.chatRoom.addMessage(message);
+    this.isTyping = true;
+    this.apiSvc.getAiResponse(this.newMessage).then((response) => {
+      const aiMessage = new Message(response, 'ai');
+      this.chatRoom.addMessage(aiMessage);
+      this.isTyping = false;
+    });
 
     this.newMessage = '';
   }

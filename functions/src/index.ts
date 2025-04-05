@@ -1,2 +1,2 @@
 
-export { helloWorld } from "./ai";
+export { talkWithTherapist } from "./ai";
