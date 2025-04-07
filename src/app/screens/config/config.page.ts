@@ -14,7 +14,7 @@ import {
   IonList,
   IonRadioGroup,
   IonRadio,
-  IonListHeader, IonImg, IonButtons, IonIcon, IonSpinner
+  IonListHeader, IonImg, IonButtons, IonIcon, IonSpinner, IonProgressBar
 } from '@ionic/angular/standalone';
 import { ModalController } from '@ionic/angular/standalone';
 import { ChatService } from 'src/app/services/chat.service';
@@ -49,7 +49,8 @@ import { UiService } from 'src/app/services/ui.service';
     IonRadioGroup,
     IonRadio,
     IonListHeader,
-    IonSpinner
+    IonSpinner,
+    IonProgressBar
   ]
 })
 export class ConfigPage implements OnInit {
@@ -58,7 +59,8 @@ export class ConfigPage implements OnInit {
   chatRoom: Chatroom = defaultChatroom();
   userInfo: UserInfo = createUserInfo(undefined, '');
   therapists: Therapist[] = [];
-  loading: boolean = false;
+  progress: number | null = null;
+  private progressInterval: any;
 
   chatSvc = inject(ChatService);
   therapistSvc = inject(TherapistsService);
@@ -78,17 +80,35 @@ export class ConfigPage implements OnInit {
     });
   }
 
+  private startProgressAnimation() {
+    this.progress = 0;
+
+    this.progressInterval = setInterval(() => {
+      if (this.progress! < 1) {
+        this.progress! += 0.01; // Will take 17 seconds to reach 1 (17 * 0.01)
+      }
+    }, 170);
+  }
+
+  private async stopProgressAnimation() {
+    clearInterval(this.progressInterval);
+    this.progress = 1;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    this.progress = null;
+  }
+
   async onSubmit() {
     if (this.chatRoom.therapistId === -1) {
       this.chatRoom.therapistId = this.therapists[0].id;
     }
     try {
-      this.loading = true;
+      this.startProgressAnimation();
       const success = await this.chatSvc.saveChatRoom(this.chatRoom);
       if (success) {
         console.log('Configuration saved:', this.chatRoom);
         await this.chatSvc.initChatRoom();
         // Close the modal after successful submission
+        this.stopProgressAnimation();
         this.modalCtrl.dismiss(this.chatRoom);
       } else {
         console.error('Error during configuration submission');
@@ -98,7 +118,7 @@ export class ConfigPage implements OnInit {
       console.error('Error during configuration submission:', error);
       await this.uiSvc.showError('Error', 'An unexpected error occurred. Please try again.');
     } finally {
-      this.loading = false;
+      this.stopProgressAnimation();
     }
   }
 

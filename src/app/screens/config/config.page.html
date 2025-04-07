@@ -9,7 +9,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true">
+  <ion-progress-bar *ngIf="progress" [value]="progress" type="determinate"></ion-progress-bar>
   <form (ngSubmit)="onSubmit()">
     <ion-list>
       <ion-radio-group [(ngModel)]="chatRoom.therapistId" name="therapist">
@@ -49,9 +50,9 @@
     </ion-list>
 
     <div class="ion-padding">
-      <ion-button expand="block" type="submit" [disabled]="loading">
-        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-        <span *ngIf="!loading">Confirm</span>
+      <ion-button expand="block" type="submit" [disabled]="progress">
+        <ion-spinner *ngIf="progress" name="crescent"></ion-spinner>
+        <span *ngIf="!progress">Confirm</span>
       </ion-button>
     </div>
   </form>
