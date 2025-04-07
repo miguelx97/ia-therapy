@@ -36,7 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
   uiSvc = inject(UiService);
 
   public chatRoom: Chatroom | undefined;
-  public header: { title: string, description?: string, image: string } = { title: 'IA Therapy', description: 'Your personal therapist', image: 'assets/avatar.jpg' };
+  public header: { title: string, description?: string, image: string } = { title: 'AI Therapy', description: 'Your personal therapist', image: 'assets/avatar.jpg' };
   chatRoomSubscription = new Subscription();
 
   async ngOnInit(): Promise<void> {
