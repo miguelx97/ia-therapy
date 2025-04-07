@@ -6,6 +6,7 @@ export interface Chatroom {
     description: string;
     therapistId: number;
     userContext: string;
+    summary: string;
     createdAt: Date;
     updatedAt: Date;
     messages: Message[];

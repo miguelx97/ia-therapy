@@ -1,2 +1,2 @@
 
-export { talkWithTherapist } from "./ai";
+export { talkWithTherapist, createUpdateChatRoom } from "./chat";

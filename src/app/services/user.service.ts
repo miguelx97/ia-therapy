@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
-import { UserInfo } from '../models/userInfo';
+import { createUserInfo, UserInfo } from '../models/userInfo';
 import { AuthtService } from './auth.service';
 @Injectable({
   providedIn: 'root'
@@ -23,7 +23,7 @@ export class UserService {
       }
 
       const userDocRef = doc(this.firestore, `users/${userInfo.id}`);
-      await setDoc(userDocRef, userInfo.getObject(), { merge: true });
+      await setDoc(userDocRef, userInfo, { merge: true });
       return userInfo.id;
     } catch (error) {
       console.error('Error saving user info:', error);
@@ -31,15 +31,18 @@ export class UserService {
     }
   }
 
-  async getUserInfo(userId?: string): Promise<UserInfo | null> {
+  async getUserInfo(userId?: string): Promise<UserInfo> {
     if (!userId) {
       const { uid } = await this.authSvc.ensureAnonymousAuth();
       userId = uid;
     }
     const userDocRef = doc(this.firestore, `users/${userId}`);
     const userDoc = await getDoc(userDocRef);
-    const userInfo = userDoc.data() as UserInfo | null;
+    let userInfo = userDoc.data() as UserInfo;
     if (userInfo) userInfo.id = userId;
+    else userInfo = createUserInfo(userId);
+    console.log("🚀 ~ UserService ~ getUserInfo ~ userInfo:", userInfo)
+
     return userInfo;
   }
 }

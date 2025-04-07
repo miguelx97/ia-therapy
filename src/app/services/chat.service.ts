@@ -2,10 +2,11 @@ import { inject, Injectable } from '@angular/core';
 import { Functions, HttpsCallable, httpsCallable } from '@angular/fire/functions';
 import { Firestore, doc, onSnapshot, DocumentData, collectionData, collection, query, limit, where } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, map, Subscription } from 'rxjs';
-import { Chatroom } from '../models/chatroom';
+import { Chatroom, createChatroom, defaultChatroom } from '../models/chatroom';
 import { Message } from '../models/message';
-import { addDoc } from 'firebase/firestore';
+import { addDoc, setDoc, Unsubscribe } from 'firebase/firestore';
 import { UserService } from './user.service';
+
 interface TherapistResponse {
   iaResponse: string | null;
 }
@@ -19,57 +20,59 @@ export class ChatService {
   private userService = inject(UserService);
 
   public chatRoom$: BehaviorSubject<Chatroom> = new BehaviorSubject(
-    new Chatroom(
-      1,
+    createChatroom(
       'Your personal therapist',
-      'Default user context',
+      0,
+      '',
       ''
     )
   );
 
-  private chatRoomSubscription?: Subscription;
+  private chatRoomSubscription?: Unsubscribe;
 
   private talkWithTherapist: HttpsCallable<{
     message: string;
     chatRoomId: string;
   }, TherapistResponse, unknown>;
 
+  private createUpdateChatRoom: HttpsCallable<{ chatroom: Chatroom }, { success: boolean }>;
+
   constructor() {
     this.talkWithTherapist = httpsCallable<{ message: string; chatRoomId: string }, TherapistResponse>(
       this.functions,
       'talkWithTherapist'
     );
+    this.createUpdateChatRoom = httpsCallable<{ chatroom: Chatroom }, { success: boolean }>(
+      this.functions,
+      'createUpdateChatRoom'
+    );
   }
 
   async initChatRoom(): Promise<void> {
     const userInfo = await this.userService.getUserInfo();
-    if (!userInfo) {
-      throw new Error('User info not found');
+    if (!userInfo.chatrooms) {
+      this.chatRoom$.next(defaultChatroom());
+      return;
     }
-    const chatroomsCollection = collection(this.firestore, 'chatrooms');
-    const firstChatroomQuery = query(chatroomsCollection, limit(1), where('therapistId', '==', userInfo.selectedChatRoom), where('userId', '==', userInfo.id));
+    const chatroomsDoc = doc(this.firestore, `chatrooms/${userInfo.selectedChatRoom}`);
 
-    this.chatRoomSubscription = collectionData(firstChatroomQuery, { idField: 'id' }).subscribe(chatrooms => {
-      const data = chatrooms[0];
-      if (data) {
-        const chatroom = new Chatroom(
-          data['therapistId'],
-          data['description'],
-          data['userContext'],
-          data['userId'],
-          data['messages']?.map((message: Message) => new Message().messageFromFirestore(message)),
-          data['id']
-        );
-        console.log("Obv Chatroom", chatroom);
-
+    this.chatRoomSubscription = onSnapshot(chatroomsDoc, (doc) => {
+      if (doc.exists()) {
+        const chatroom = doc.data() as Chatroom;
+        chatroom.id = doc.id;
+        chatroom.messages = chatroom.messages.map(message => new Message().messageFromFirestore(message));
         this.chatRoom$.next(chatroom);
+      } else {
+        this.chatRoom$.next(defaultChatroom());
       }
     });
   }
 
-  async saveChatRoom(chatRoom: Chatroom): Promise<void> {
-    const chatroomsCollection = collection(this.firestore, 'chatrooms');
-    await addDoc(chatroomsCollection, chatRoom.getObject());
+  async saveChatRoom(chatRoom: Chatroom): Promise<boolean> {
+    const chatRoomObject = Object.assign({}, chatRoom);
+    const result = await this.createUpdateChatRoom({ chatroom: chatRoomObject });
+    console.log("🚀 ~ ChatService ~ saveChatRoom ~ result:", result);
+    return result.data.success;
   }
 
   async sendMessage(message: string, chatRoomId: string): Promise<string> {

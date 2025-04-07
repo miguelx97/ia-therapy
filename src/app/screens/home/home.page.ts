@@ -1,19 +1,20 @@
-import { Component, inject, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { sendOutline, colorFilterOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { Message } from 'src/app/models/message';
-import { Chatroom } from 'src/app/models/chatroom';
+import { addMessage, Chatroom } from 'src/app/models/chatroom';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ChatService } from 'src/app/services/chat.service';
 import { MarkdownPipe } from 'src/app/pipes/markdown.pipe';
-import { retry } from 'rxjs';
+import { retry, Subscription } from 'rxjs';
 import { ModalController } from '@ionic/angular/standalone';
 import { ImageViewerComponent } from 'src/app/components/image-viewer/image-viewer.component';
 import { ConfigPage } from '../config/config.page';
 import { TherapistsService } from 'src/app/services/therapists.service';
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -22,7 +23,7 @@ import { TherapistsService } from 'src/app/services/therapists.service';
   imports: [IonicModule, FormsModule, CommonModule, MarkdownPipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
 
   constructor(private modalCtrl: ModalController) {
@@ -33,16 +34,26 @@ export class HomePage implements OnInit {
   therapistSvc = inject(TherapistsService);
 
   public chatRoom: Chatroom | undefined;
-  public header: { title: string, description: string } = { title: 'IA Therapy', description: 'Your personal therapist' };
+  public header: { title: string, description: string, image: string } = { title: 'IA Therapy', description: 'Your personal therapist', image: 'assets/avatar.jpg' };
+  chatRoomSubscription = new Subscription();
 
   async ngOnInit(): Promise<void> {
     await this.chatSvc.initChatRoom();
-    this.chatSvc.chatRoom$.subscribe(async (chatroom) => {
+    this.chatRoomSubscription = this.chatSvc.chatRoom$.subscribe(async (chatroom) => {
       this.chatRoom = chatroom;
-      this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
-      this.header.description = this.chatRoom.description;
+      if (this.chatRoom.therapistId > 0) {
+        this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
+        this.header.description = this.chatRoom.description;
+        this.header.image = `assets/therapists/therapist_${this.chatRoom.therapistId}.webp`;
+      } else if (this.chatRoom.therapistId === -1) {
+        this.openConfig(false);
+      }
       this.scrollToBottom();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.chatRoomSubscription.unsubscribe();
   }
 
   public newMessage: string = '';
@@ -76,15 +87,13 @@ export class HomePage implements OnInit {
     }
     const messageContent = this.newMessage;
     const message = new Message().createMessage(messageContent, 'user');
-    this.chatRoom!.addMessage(message);
+    this.chatRoom = addMessage(this.chatRoom!, message);
     this.isTyping = true;
     this.newMessage = '';
     this.scrollToBottom();
 
     const response = await this.chatSvc.sendMessage(messageContent, this.chatRoom!.id!);
     if (response) {
-      const aiMessage = new Message().createMessage(response, 'system');
-      this.chatRoom!.addMessage(aiMessage);
       this.scrollToBottom();
     }
     this.isTyping = false;
@@ -97,9 +106,13 @@ export class HomePage implements OnInit {
     }
   }
 
-  async openConfig() {
+  async openConfig(canBeClosed: boolean = true) {
     const modal = await this.modalCtrl.create({
-      component: ConfigPage
+      component: ConfigPage,
+      backdropDismiss: false,
+      componentProps: {
+        canBeClosed: canBeClosed
+      }
     });
     await modal.present();
   }

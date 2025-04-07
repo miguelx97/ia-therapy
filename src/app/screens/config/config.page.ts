@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -7,29 +7,32 @@ import {
   IonTitle,
   IonToolbar,
   IonItem,
+  IonInput,
   IonLabel,
   IonTextarea,
   IonButton,
   IonList,
   IonRadioGroup,
   IonRadio,
-  IonListHeader, IonImg
+  IonListHeader, IonImg, IonButtons, IonIcon, IonSpinner
 } from '@ionic/angular/standalone';
 import { ModalController } from '@ionic/angular/standalone';
 import { ChatService } from 'src/app/services/chat.service';
-import { AuthtService } from 'src/app/services/auth.service';
-import { Chatroom } from 'src/app/models/chatroom';
-import { User } from 'firebase/auth';
-import { UserInfo } from 'src/app/models/userInfo';
+import { Chatroom, defaultChatroom } from 'src/app/models/chatroom';
+import { createUserInfo, UserInfo } from 'src/app/models/userInfo';
 import { UserService } from 'src/app/services/user.service';
 import { Therapist } from 'src/app/models/therapisrt';
 import { TherapistsService } from 'src/app/services/therapists.service';
+import { firstValueFrom } from 'rxjs';
+import { close } from 'ionicons/icons';
+import { addIcons } from 'ionicons';
+
 @Component({
   selector: 'app-config',
   templateUrl: './config.page.html',
   styleUrls: ['./config.page.scss'],
   standalone: true,
-  imports: [IonImg,
+  imports: [IonIcon, IonButtons, IonImg,
     CommonModule,
     FormsModule,
     IonContent,
@@ -37,59 +40,67 @@ import { TherapistsService } from 'src/app/services/therapists.service';
     IonTitle,
     IonToolbar,
     IonItem,
+    // IonInput,
     IonLabel,
     IonTextarea,
     IonButton,
     IonList,
     IonRadioGroup,
     IonRadio,
-    IonListHeader
+    IonListHeader,
+    IonSpinner
   ]
 })
 export class ConfigPage implements OnInit {
-  selectedTherapist: number = 1;
-  userName: string = '';
-  userContext: string = '';
+  @Input() canBeClosed: boolean = false;
 
-  therapists: Therapist[] = [
-  ];
+  chatRoom: Chatroom = defaultChatroom();
+  userInfo: UserInfo = createUserInfo(undefined, '');
+  therapists: Therapist[] = [];
+  loading: boolean = false;
 
   chatSvc = inject(ChatService);
-  userSvc = inject(UserService);
   therapistSvc = inject(TherapistsService);
+  modalCtrl = inject(ModalController);
   constructor(
-    private modalCtrl: ModalController,
-  ) { }
+  ) {
+    addIcons({ close });
+  }
 
   async ngOnInit() {
-    this.therapists = await this.therapistSvc.getTherapists();
+    firstValueFrom(this.chatSvc.chatRoom$).then(chatRoom => {
+      if (chatRoom) this.chatRoom = chatRoom;
+    });
+    this.therapistSvc.getTherapists().then(therapists => {
+      if (therapists) this.therapists = therapists;
+    });
   }
 
   async onSubmit() {
+    if (this.chatRoom.therapistId === -1) {
+      this.chatRoom.therapistId = this.therapists[0].id;
+    }
     try {
-
-      const userInfo = new UserInfo(
-        this.userName
-      );
-
-      // Save user info to Firestore
-      const uid = await this.userSvc.saveUserInfo(userInfo);
-
-      const chatRoom = new Chatroom(
-        this.therapists[this.selectedTherapist - 1].id,
-        'Your AI therapist',
-        this.userContext,
-        uid
-      );
-      await this.chatSvc.saveChatRoom(chatRoom);
-
-      console.log('Configuration saved:', chatRoom);
-      // Close the modal after successful submission
-      this.modalCtrl.dismiss(chatRoom);
+      this.loading = true;
+      const success = await this.chatSvc.saveChatRoom(this.chatRoom);
+      if (success) {
+        console.log('Configuration saved:', this.chatRoom);
+        this.chatSvc.initChatRoom();
+        // Close the modal after successful submission
+        this.modalCtrl.dismiss(this.chatRoom);
+      } else {
+        console.error('Error during configuration submission');
+      }
 
     } catch (error) {
       console.error('Error during configuration submission:', error);
       // Here you might want to show an error message to the user
+    } finally {
+      this.loading = false;
     }
+  }
+
+  dismissModal() {
+    this.modalCtrl.dismiss();
   }
 }

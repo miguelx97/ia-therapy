@@ -1,13 +1,18 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Your preferences</ion-title>
+    <ion-title>About you</ion-title>
+    <ion-buttons slot="end" *ngIf="canBeClosed">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <form (ngSubmit)="onSubmit()">
     <ion-list>
-      <ion-radio-group [(ngModel)]="selectedTherapist" name="therapist">
+      <ion-radio-group [(ngModel)]="chatRoom.therapistId" name="therapist">
         <ion-list-header>
           <ion-label>Choose your therapist</ion-label>
         </ion-list-header>
@@ -24,12 +29,13 @@
         </div>
       </ion-radio-group>
 
-      <ion-item>
+      <!-- <ion-item>
         <ion-label position="stacked">Your name (or nickname)</ion-label>
-        <ion-input [(ngModel)]="userName" name="description" placeholder="How would you like to be called?"></ion-input>
+        <ion-input [(ngModel)]="userInfo.name" name="userName"
+          placeholder="How would you like to be called?"></ion-input>
       </ion-item>
 
-      <!-- <ion-item>
+      <ion-item>
         <ion-label position="stacked">Describe yourself</ion-label>
         <ion-textarea [(ngModel)]="userDescription" name="description" placeholder="Tell us about yourself..."
           [rows]="4"></ion-textarea>
@@ -37,13 +43,16 @@
 
       <ion-item>
         <ion-label position="stacked">Your context</ion-label>
-        <ion-textarea [(ngModel)]="userContext" name="talkAbout" placeholder="Help me understand you better..."
-          [rows]="4"></ion-textarea>
+        <ion-textarea [(ngModel)]="chatRoom.userContext" name="userContext"
+          placeholder="Help me understand you better..." [rows]="4"></ion-textarea>
       </ion-item>
     </ion-list>
 
     <div class="ion-padding">
-      <ion-button expand="block" type="submit">Confirm</ion-button>
+      <ion-button expand="block" type="submit" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Confirm</span>
+      </ion-button>
     </div>
   </form>
 </ion-content>

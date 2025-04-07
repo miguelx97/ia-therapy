@@ -1,34 +1,43 @@
 import { Message } from './message';
 
-export class Chatroom {
-    public id?: string;
+export interface Chatroom {
+    id?: string;
     readonly description: string;
-    readonly therapistId: number;
-    readonly userContext: string;
+    therapistId: number;
+    userContext: string;
     readonly createdAt: Date;
-    private updatedAt: Date;
-    public messages: Message[];
-    private userId: string;
-
-    constructor(therapistId: number, description: string, userContext: string, userId: string, messages: Message[] = [], id?: string) {
-        this.therapistId = therapistId;
-        this.description = description;
-        this.userContext = userContext;
-        this.createdAt = new Date();
-        this.updatedAt = new Date();
-        this.messages = messages;
-        this.userId = userId;
-        this.id = id;
-    }
-
-    addMessage(message: Message): void {
-        this.messages.push(message);
-        this.updatedAt = new Date();
-    }
-
-    getObject(): Chatroom {
-        const obj = Object.assign({}, this);
-        delete obj.id;
-        return obj;
-    }
+    updatedAt: Date;
+    messages: Message[];
+    summary?: string;
+    userId?: string;
+    // userName?: string;
 }
+
+export function createChatroom(
+    description: string,
+    therapistId: number,
+    userContext: string,
+    userId?: string,
+    id?: string,
+    messages?: Message[],
+): Chatroom {
+    return {
+        id,
+        description,
+        therapistId,
+        userContext,
+        userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        messages: messages || [],
+    };
+}
+
+export function addMessage(chatroom: Chatroom, message: Message): Chatroom {
+    return {
+        ...chatroom,
+        messages: [...chatroom.messages, message],
+    };
+}
+
+export const defaultChatroom = () => createChatroom('Your AI therapist', -1, '', '');

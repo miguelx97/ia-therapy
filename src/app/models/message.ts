@@ -33,9 +33,10 @@ export class Message {
         return this.timestamp?.toLocaleString() ?? '';
     }
 
-    updateContent(newContent: string): void {
-        this.content = newContent;
+    getObject(): Message {
+        return Object.assign({}, this);
     }
+
 }
 
 type MessageSender = 'user' | 'system';
