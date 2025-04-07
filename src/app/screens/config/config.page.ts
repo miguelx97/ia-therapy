@@ -26,6 +26,7 @@ import { TherapistsService } from 'src/app/services/therapists.service';
 import { firstValueFrom } from 'rxjs';
 import { close } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import { UiService } from 'src/app/services/ui.service';
 
 @Component({
   selector: 'app-config',
@@ -62,8 +63,9 @@ export class ConfigPage implements OnInit {
   chatSvc = inject(ChatService);
   therapistSvc = inject(TherapistsService);
   modalCtrl = inject(ModalController);
-  constructor(
-  ) {
+  uiSvc = inject(UiService);
+
+  constructor() {
     addIcons({ close });
   }
 
@@ -85,16 +87,16 @@ export class ConfigPage implements OnInit {
       const success = await this.chatSvc.saveChatRoom(this.chatRoom);
       if (success) {
         console.log('Configuration saved:', this.chatRoom);
-        this.chatSvc.initChatRoom();
+        await this.chatSvc.initChatRoom();
         // Close the modal after successful submission
         this.modalCtrl.dismiss(this.chatRoom);
       } else {
         console.error('Error during configuration submission');
+        await this.uiSvc.showError('Error', 'Failed to save configuration. Please try again.');
       }
-
     } catch (error) {
       console.error('Error during configuration submission:', error);
-      // Here you might want to show an error message to the user
+      await this.uiSvc.showError('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       this.loading = false;
     }

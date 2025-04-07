@@ -40,20 +40,25 @@ export class HomePage implements OnInit, OnDestroy {
   chatRoomSubscription = new Subscription();
 
   async ngOnInit(): Promise<void> {
-    await this.uiSvc.showLoading('Loading your session...');
-    await this.chatSvc.initChatRoom();
-    this.chatRoomSubscription = this.chatSvc.chatRoom$.subscribe(async (chatroom) => {
+    try {
+      await this.uiSvc.showLoading('Loading your session...');
+      await this.chatSvc.initChatRoom();
+      this.chatRoomSubscription = this.chatSvc.chatRoom$.subscribe(async (chatroom) => {
+        this.chatRoom = chatroom;
+        if (this.chatRoom.therapistId > 0) {
+          this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
+          this.header.description = this.chatRoom.description;
+          this.header.image = `assets/therapists/therapist_${this.chatRoom.therapistId}.webp`;
+        } else if (this.chatRoom.therapistId === -1) {
+          this.openConfig(false);
+        }
+        this.scrollToBottom();
+      });
+    } catch (error) {
+      console.error('Error initializing chat room:', error);
+    } finally {
       this.uiSvc.hideLoading();
-      this.chatRoom = chatroom;
-      if (this.chatRoom.therapistId > 0) {
-        this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
-        this.header.description = this.chatRoom.description;
-        this.header.image = `assets/therapists/therapist_${this.chatRoom.therapistId}.webp`;
-      } else if (this.chatRoom.therapistId === -1) {
-        this.openConfig(false);
-      }
-      this.scrollToBottom();
-    });
+    }
   }
 
   ngOnDestroy(): void {

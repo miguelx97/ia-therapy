@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { LoadingController, AlertController } from '@ionic/angular';
+import { LoadingController, AlertController } from '@ionic/angular/standalone';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,5 +47,14 @@ export class UiService {
 
       await alert.present();
     });
+  }
+
+  async showError(header: string = 'Error', message: string): Promise<void> {
+    const alert = await this.alert.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 }

@@ -54,23 +54,32 @@ export class ChatService {
   }
 
   async initChatRoom(): Promise<void> {
-    const userInfo = await this.userService.getUserInfo();
-    if (!userInfo.chatrooms) {
-      this.chatRoom$.next(defaultChatroom());
-      return;
-    }
-    const chatroomsDoc = doc(this.firestore, `chatrooms/${userInfo.selectedChatRoom}`);
-
-    this.chatRoomSubscription = onSnapshot(chatroomsDoc, (doc) => {
-      if (doc.exists()) {
-        const chatroom = doc.data() as Chatroom;
-        chatroom.id = doc.id;
-        chatroom.messages = chatroom.messages.map(message => new Message().messageFromFirestore(message));
-        this.chatRoom$.next(chatroom);
-      } else {
+    try {
+      const userInfo = await this.userService.getUserInfo();
+      if (!userInfo.chatrooms) {
         this.chatRoom$.next(defaultChatroom());
+        return;
       }
-    });
+      const chatroomsDoc = doc(this.firestore, `chatrooms/${userInfo.selectedChatRoom}`);
+
+      this.chatRoomSubscription = onSnapshot(chatroomsDoc, (doc) => {
+        if (doc.exists()) {
+          const chatroom = doc.data() as Chatroom;
+          chatroom.id = doc.id;
+          chatroom.messages = chatroom.messages.map(message => new Message().messageFromFirestore(message));
+          this.chatRoom$.next(chatroom);
+        } else {
+          this.chatRoom$.next(defaultChatroom());
+        }
+      }, (error) => {
+        console.error('Error listening to chatroom changes:', error);
+        this.chatRoom$.next(defaultChatroom());
+      });
+    } catch (error) {
+      console.error('Error initializing chat room:', error);
+      this.chatRoom$.next(defaultChatroom());
+      throw error;
+    }
   }
 
   async saveChatRoom(chatRoom: Chatroom): Promise<boolean> {
