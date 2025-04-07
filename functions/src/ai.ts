@@ -16,7 +16,7 @@ export class AI {
         return AI._openai;
     }
 
-    static conversation = async (messages: ChatCompletionMessageParam[], maxTokens: number = 300): Promise<string | null> => {
+    static conversation = async (messages: ChatCompletionMessageParam[], maxTokens: number = 200): Promise<string | null> => {
         try {
             const completion = await AI.openai.chat.completions.create({
                 model: "deepseek-chat",

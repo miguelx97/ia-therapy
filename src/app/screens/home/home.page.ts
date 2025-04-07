@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { sendOutline, colorFilterOutline } from 'ionicons/icons';
+import { sendOutline, colorFilterOutline, syncOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { Message } from 'src/app/models/message';
 import { addMessage, Chatroom } from 'src/app/models/chatroom';
@@ -14,6 +14,7 @@ import { ModalController } from '@ionic/angular/standalone';
 import { ImageViewerComponent } from 'src/app/components/image-viewer/image-viewer.component';
 import { ConfigPage } from '../config/config.page';
 import { TherapistsService } from 'src/app/services/therapists.service';
+import { UiService } from 'src/app/services/ui.service';
 
 @Component({
   selector: 'app-home',
@@ -27,19 +28,22 @@ export class HomePage implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
 
   constructor(private modalCtrl: ModalController) {
-    addIcons({ sendOutline, colorFilterOutline });
+    addIcons({ sendOutline, colorFilterOutline, syncOutline });
   }
 
   chatSvc = inject(ChatService);
   therapistSvc = inject(TherapistsService);
+  uiSvc = inject(UiService);
 
   public chatRoom: Chatroom | undefined;
-  public header: { title: string, description: string, image: string } = { title: 'IA Therapy', description: 'Your personal therapist', image: 'assets/avatar.jpg' };
+  public header: { title: string, description?: string, image: string } = { title: 'IA Therapy', description: 'Your personal therapist', image: 'assets/avatar.jpg' };
   chatRoomSubscription = new Subscription();
 
   async ngOnInit(): Promise<void> {
+    await this.uiSvc.showLoading('Loading your session...');
     await this.chatSvc.initChatRoom();
     this.chatRoomSubscription = this.chatSvc.chatRoom$.subscribe(async (chatroom) => {
+      this.uiSvc.hideLoading();
       this.chatRoom = chatroom;
       if (this.chatRoom.therapistId > 0) {
         this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
@@ -109,12 +113,21 @@ export class HomePage implements OnInit, OnDestroy {
   async openConfig(canBeClosed: boolean = true) {
     const modal = await this.modalCtrl.create({
       component: ConfigPage,
-      backdropDismiss: false,
+      backdropDismiss: canBeClosed,
       componentProps: {
         canBeClosed: canBeClosed
       }
     });
     await modal.present();
+  }
+
+  async newSession() {
+    const confirmed = await this.uiSvc.confirm('New session', 'Are you sure you want to start a new session?');
+    if (confirmed) {
+      await this.uiSvc.showLoading('Starting new session...');
+      await this.chatSvc.newSession(this.chatRoom!.id!);
+      this.uiSvc.hideLoading();
+    }
   }
 
 }

@@ -39,9 +39,7 @@ export const talkWithTherapist = onCall(async (request) => {
         timestamp: new Date()
     });
 
-    const context = therapistPrompt(userContext);
-
-    const iaResponse: string | null = await generateTherapistMessage(context, messages);
+    const iaResponse: string | null = await generateTherapistMessage(therapistPrompt(userContext), messages);
 
     if (iaResponse) {
         messages.push({
@@ -81,19 +79,36 @@ export const createUpdateChatRoom = onCall(async (request) => {
 
     const chatroom: Chatroom = request.data.chatroom;
 
-    const iaDescription: string | null = await AI.reply(chatroomTitlePrompt(chatroom.userContext), 100);
-
     // get user info by auth
     const user = request.auth;
     if (!user) {
         throw new Error('User not found');
     }
 
-    if (iaDescription) chatroom.description = iaDescription;
+    const iaDescription: string | null = await AI.reply(chatroomTitlePrompt(chatroom.userContext), 100);
+    chatroom.description = iaDescription ?? 'Your AI therapist';
     chatroom.userId = user.uid;
     chatroom.messages = [];
 
     log("!!!chatroom:", chatroom);
+
+    const messages: Message[] = [
+        {
+            id: '1',
+            content: 'Give me a message. Answer in the same language in which the question is asked. Make it short and concise (around 60 words).',
+            sender: 'user',
+            timestamp: new Date()
+        }
+    ];
+    const iaResponse: string | null = await generateTherapistMessage(therapistShortPrompt(chatroom.userContext), messages);
+    if (iaResponse) {
+        chatroom.messages.push({
+            id: crypto.randomUUID(),
+            content: iaResponse,
+            sender: 'system',
+            timestamp: new Date()
+        });
+    }
 
     let chatroomDoc: DocumentSnapshot | DocumentReference;
     if (chatroom.id) {
@@ -160,7 +175,7 @@ export const therapySummary = onCall(async (request) => {
 
     const chatroom: Chatroom = chatroomDoc.data() as Chatroom;
 
-    const messages: Message[] = chatroom.messages;
+    let messages: Message[] = chatroom.messages;
     messages.push({
         id: crypto.randomUUID(),
         content: summaryPrompt(chatroom.userContext),
@@ -170,8 +185,21 @@ export const therapySummary = onCall(async (request) => {
 
     const summary: string | null = await generateTherapistMessage(therapistShortPrompt(chatroom.userContext), messages);
 
+    if (!summary) {
+        throw new Error('Summary not generated');
+    }
+
+    messages = [
+        {
+            id: crypto.randomUUID(),
+            content: summary,
+            sender: 'system',
+            timestamp: new Date()
+        }
+    ]
+
     await db.collection('chatrooms').doc(chatRoomId).update({
-        summary
+        messages
     });
 
     return {

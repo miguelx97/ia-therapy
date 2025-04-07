@@ -3,6 +3,7 @@
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 1rem;
   padding: 0.5rem;
+  justify-items: center;
 }
 
 ion-item.therapist-item {
@@ -15,19 +16,17 @@ ion-item.therapist-item {
 }
 
 ion-radio {
-  width: 100%;
-  margin: 0;
-
   &::part(container) {
     display: none;
   }
+  padding-left: 1rem;
 }
 
 .therapist-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1rem;
   border-radius: 12px;
   transition: all 0.3s ease;
 

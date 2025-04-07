@@ -2,7 +2,7 @@ import { Message } from './message';
 
 export interface Chatroom {
     id?: string;
-    readonly description: string;
+    description?: string;
     therapistId: number;
     userContext: string;
     readonly createdAt: Date;
@@ -14,9 +14,9 @@ export interface Chatroom {
 }
 
 export function createChatroom(
-    description: string,
     therapistId: number,
     userContext: string,
+    description?: string,
     userId?: string,
     id?: string,
     messages?: Message[],
@@ -40,4 +40,4 @@ export function addMessage(chatroom: Chatroom, message: Message): Chatroom {
     };
 }
 
-export const defaultChatroom = () => createChatroom('Your AI therapist', -1, '', '');
+export const defaultChatroom = () => createChatroom(-1, '');

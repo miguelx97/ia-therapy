@@ -21,9 +21,9 @@ export class ChatService {
 
   public chatRoom$: BehaviorSubject<Chatroom> = new BehaviorSubject(
     createChatroom(
-      'Your personal therapist',
       0,
       '',
+      'Your personal therapist',
       ''
     )
   );
@@ -36,6 +36,7 @@ export class ChatService {
   }, TherapistResponse, unknown>;
 
   private createUpdateChatRoom: HttpsCallable<{ chatroom: Chatroom }, { success: boolean }>;
+  private therapySummary: HttpsCallable<{ chatRoomId: string }, { success: boolean }>;
 
   constructor() {
     this.talkWithTherapist = httpsCallable<{ message: string; chatRoomId: string }, TherapistResponse>(
@@ -45,6 +46,10 @@ export class ChatService {
     this.createUpdateChatRoom = httpsCallable<{ chatroom: Chatroom }, { success: boolean }>(
       this.functions,
       'createUpdateChatRoom'
+    );
+    this.therapySummary = httpsCallable<{ chatRoomId: string }, { success: boolean }>(
+      this.functions,
+      'therapySummary'
     );
   }
 
@@ -79,5 +84,9 @@ export class ChatService {
     const result = await this.talkWithTherapist({ message, chatRoomId });
     console.log("🚀 ~ ApiService ~ getAiResponse ~ result:", result);
     return result.data.iaResponse ?? '';
+  }
+
+  async newSession(chatRoomId: string): Promise<void> {
+    await this.therapySummary({ chatRoomId });
   }
 }

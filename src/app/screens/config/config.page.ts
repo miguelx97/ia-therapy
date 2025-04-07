@@ -103,4 +103,11 @@ export class ConfigPage implements OnInit {
   dismissModal() {
     this.modalCtrl.dismiss();
   }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && event.shiftKey) {
+      event.preventDefault();
+      this.onSubmit();
+    }
+  }
 }

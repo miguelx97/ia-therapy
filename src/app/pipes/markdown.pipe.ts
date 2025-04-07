@@ -20,7 +20,6 @@ export class MarkdownPipe implements PipeTransform {
         if (!value) return from(['']);
 
         const html = await marked(value);
-        console.log("🚀 ~ MarkdownPipe ~ transform ~ value:", value)
         return this.sanitizer.bypassSecurityTrustHtml(html)
     }
 } 

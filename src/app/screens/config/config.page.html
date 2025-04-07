@@ -44,7 +44,7 @@
       <ion-item>
         <ion-label position="stacked">Your context</ion-label>
         <ion-textarea [(ngModel)]="chatRoom.userContext" name="userContext"
-          placeholder="Help me understand you better..." [rows]="4"></ion-textarea>
+          placeholder="Help me understand you better..." [rows]="4" (keydown)="onKeyDown($event)"></ion-textarea>
       </ion-item>
     </ion-list>
 
