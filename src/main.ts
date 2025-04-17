@@ -6,6 +6,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFunctions, provideFunctions } from '@angular/fire/functions';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getAuth, provideAuth } from '@angular/fire/auth';
+import { getDatabase, provideDatabase } from '@angular/fire/database';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
@@ -21,6 +22,7 @@ bootstrapApplication(AppComponent, {
     provideFunctions(() => getFunctions()),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
+    provideDatabase(() => getDatabase()),
     provideHttpClient(),
   ],
 });

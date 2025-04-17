@@ -50,7 +50,18 @@
     </ion-list>
 
     <div class="ion-padding">
-      <ion-button expand="block" type="submit" [disabled]="progress">
+      <ion-item lines="none">
+        <ion-checkbox [(ngModel)]="disclaimerAccepted" name="disclaimer" labelPlacement="end">
+          <ion-label class="ion-text-wrap">
+            I understand this is an
+            experimental AI tool
+            and not a substitute for professional mental health care. The app and its developers are not responsible for
+            any decisions or actions taken based on the AI's responses.
+          </ion-label>
+        </ion-checkbox>
+      </ion-item>
+
+      <ion-button expand="block" type="submit" [disabled]="progress || !disclaimerAccepted">
         <ion-spinner *ngIf="progress" name="crescent"></ion-spinner>
         <span *ngIf="!progress">Confirm</span>
       </ion-button>

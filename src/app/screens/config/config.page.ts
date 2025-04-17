@@ -14,7 +14,7 @@ import {
   IonList,
   IonRadioGroup,
   IonRadio,
-  IonListHeader, IonImg, IonButtons, IonIcon, IonSpinner, IonProgressBar
+  IonListHeader, IonImg, IonButtons, IonIcon, IonSpinner, IonProgressBar, IonCheckbox
 } from '@ionic/angular/standalone';
 import { ModalController } from '@ionic/angular/standalone';
 import { ChatService } from 'src/app/services/chat.service';
@@ -51,11 +51,13 @@ import { delay } from 'src/app/utils/utils';
     IonRadio,
     IonListHeader,
     IonSpinner,
-    IonProgressBar
+    IonProgressBar,
+    IonCheckbox
   ]
 })
 export class ConfigPage implements OnInit {
   @Input() canBeClosed: boolean = false;
+  disclaimerAccepted: boolean = false;
 
   chatRoom: Chatroom = defaultChatroom();
   userInfo: UserInfo = createUserInfo(undefined, '');

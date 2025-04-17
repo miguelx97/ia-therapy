@@ -7,6 +7,7 @@ import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { AI } from "./ai";
 import { UserInfo } from "./models/userInfo";
 import { loadPrompts } from "./promts";
+import { Prompts } from "./models/prompts";
 // Initialize Firebase Admin
 
 const db = getFirestore();
@@ -86,8 +87,12 @@ export const createUpdateChatRoom = onCall(async (request) => {
     }
 
     const { chatroomTitle } = await loadPrompts(chatroom.userContext, chatroom.summary);
-    const iaDescription: string | null = await AI.reply(chatroomTitle, 100);
-    chatroom.description = iaDescription ?? 'Your AI therapist';
+    if (chatroom.userContext) {
+        const iaDescription: string | null = await AI.reply(chatroomTitle, 100);
+        chatroom.description = iaDescription ?? 'Your AI therapist';
+    } else {
+        chatroom.description = 'Your AI therapist';
+    }
     chatroom.userId = user.uid;
     chatroom.messages = [];
 
@@ -176,7 +181,7 @@ export const therapySummary = onCall(async (request) => {
     }
 
     const chatroom: Chatroom = chatroomDoc.data() as Chatroom;
-    const prompts = await loadPrompts(chatroom.userContext, chatroom.summary);
+    let prompts: Prompts = await loadPrompts(chatroom.userContext, chatroom.summary);
 
     let messages: Message[] = chatroom.messages;
     messages.push({
@@ -192,6 +197,8 @@ export const therapySummary = onCall(async (request) => {
         throw new Error('Summary not generated');
     }
 
+    prompts = await loadPrompts(chatroom.userContext, summary);
+
     messages = [
         {
             id: '2',
@@ -201,15 +208,17 @@ export const therapySummary = onCall(async (request) => {
         }
     ];
     const aiTherapistWellcome: string | null = await generateTherapistMessage(prompts.therapist.short, messages);
-
-    if (aiTherapistWellcome) {
-        chatroom.messages.push({
+    if (!aiTherapistWellcome) {
+        throw new Error('Therapist wellcome not generated');
+    }
+    messages = [
+        {
             id: crypto.randomUUID(),
             content: aiTherapistWellcome,
             sender: 'system',
             timestamp: new Date()
-        });
-    }
+        }
+    ]
 
     await db.collection('chatrooms').doc(chatRoomId).update({
         summary,
