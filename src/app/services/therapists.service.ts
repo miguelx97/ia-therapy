@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Therapist } from '../models/therapisrt';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable({
@@ -15,8 +15,8 @@ export class TherapistsService {
 
   async getTherapists(): Promise<Therapist[]> {
     if (this.therapists.length === 0) {
-      const response = await lastValueFrom(this.http.get<{ therapists: Therapist[] }>('assets/therapists.json'));
-      this.therapists = response.therapists;
+      const response = await lastValueFrom(this.http.get<Therapist[]>('assets/therapists.json'));
+      this.therapists = response;
     }
     return this.therapists;
   }

@@ -3,7 +3,7 @@ import { Prompts } from './models/prompts';
 
 let prompts: Prompts;
 
-export async function loadPrompts(context: string): Promise<Prompts> {
+export async function loadPrompts(context: string, summary?: string): Promise<Prompts> {
     if (prompts) return prompts;
     const db = getDatabase();
     const promptRef = db.ref('prompts');
@@ -15,6 +15,9 @@ export async function loadPrompts(context: string): Promise<Prompts> {
     prompts = snapshot.val() as Prompts;
     // Replace [Context] with [Context] ${context} in all prompt strings
     const promptsJson = JSON.stringify(prompts);
-    prompts = JSON.parse(promptsJson.replace('[Context]', `[Context] ${context}`));
+    let promptReplaced = promptsJson.replace('[Context]', `[Context] ${context}`);
+    const summaryStr = summary ? `[Last session summary] ${summary}` : '';
+    promptReplaced = promptReplaced.replace('[Last session summary]', summaryStr);
+    prompts = JSON.parse(promptReplaced) as Prompts;
     return prompts;
 }

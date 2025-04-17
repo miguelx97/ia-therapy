@@ -37,7 +37,6 @@ export class ChatService {
 
   private createUpdateChatRoom: HttpsCallable<{ chatroom: Chatroom }, { success: boolean }>;
   private therapySummary: HttpsCallable<{ chatRoomId: string }, { success: boolean }>;
-  private test: HttpsCallable<{}, { res: any }>;
   constructor() {
     this.talkWithTherapist = httpsCallable<{ message: string; chatRoomId: string }, TherapistResponse>(
       this.functions,
@@ -51,15 +50,9 @@ export class ChatService {
       this.functions,
       'therapySummary'
     );
-    this.test = httpsCallable<{}, { res: any }>(
-      this.functions,
-      'test'
-    );
   }
 
   async initChatRoom(): Promise<void> {
-    const result = await this.test({});
-    console.log("🚀 ~ ChatService ~ initChatRoom ~ result:", result);
     try {
       const userInfo = await this.userService.getUserInfo();
       if (!userInfo.chatrooms) {
