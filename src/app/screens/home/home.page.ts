@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, IonTextarea } from '@ionic/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { sendOutline, colorFilterOutline, syncOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
@@ -15,6 +15,7 @@ import { ImageViewerComponent } from 'src/app/components/image-viewer/image-view
 import { ConfigPage } from '../config/config.page';
 import { TherapistsService } from 'src/app/services/therapists.service';
 import { UiService } from 'src/app/services/ui.service';
+import { delay } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-home',
@@ -26,6 +27,7 @@ import { UiService } from 'src/app/services/ui.service';
 })
 export class HomePage implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+  @ViewChild('messageInput') private messageInput!: IonTextarea;
 
   constructor(private modalCtrl: ModalController) {
     addIcons({ sendOutline, colorFilterOutline, syncOutline });
@@ -43,22 +45,27 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       await this.uiSvc.showLoading('Loading your session...');
       await this.chatSvc.initChatRoom();
-      this.chatRoomSubscription = this.chatSvc.chatRoom$.subscribe(async (chatroom) => {
-        this.chatRoom = chatroom;
-        if (this.chatRoom.therapistId > 0) {
-          this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
-          this.header.description = this.chatRoom.description;
-          this.header.image = `assets/therapists/therapist_${this.chatRoom.therapistId}.webp`;
-        } else if (this.chatRoom.therapistId === -1) {
-          this.openConfig(false);
-        }
-        this.scrollToBottom();
-      });
+      this.chatRoomSubscription = this.chatSvc.chatRoom$.subscribe(this.handleChatroomUpdate.bind(this));
     } catch (error) {
       console.error('Error initializing chat room:', error);
     } finally {
       this.uiSvc.hideLoading();
     }
+  }
+
+  private async handleChatroomUpdate(chatroom: Chatroom): Promise<void> {
+    this.chatRoom = chatroom;
+    if (this.chatRoom.therapistId > 0) {
+      this.header.title = (await this.therapistSvc.getTherapist(this.chatRoom.therapistId))?.name ?? '';
+      this.header.description = this.chatRoom.description;
+      this.header.image = `assets/therapists/therapist_${this.chatRoom.therapistId}.webp`;
+    } else if (this.chatRoom.therapistId === -1) {
+      this.openConfig(false);
+    }
+    this.scrollToBottom();
+    delay(300).then(() => {
+      this.messageInput?.setFocus();
+    });
   }
 
   ngOnDestroy(): void {
@@ -68,12 +75,11 @@ export class HomePage implements OnInit, OnDestroy {
   public newMessage: string = '';
   public isTyping: boolean = false;
 
-  private scrollToBottom(): void {
+  private async scrollToBottom(): Promise<void> {
     try {
-      setTimeout(() => {
-        const container = this.messagesContainer.nativeElement;
-        container.scrollTop = container.scrollHeight;
-      }, 100);
+      await delay(100);
+      const container = this.messagesContainer.nativeElement;
+      container.scrollTop = container.scrollHeight;
     } catch (err) {
       console.error('Error scrolling to bottom:', err);
     }

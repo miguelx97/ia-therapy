@@ -1,15 +1,13 @@
 import { onCall } from "firebase-functions/https";
 import { log } from "firebase-functions/logger";
 import { DocumentReference, DocumentSnapshot, getFirestore } from "firebase-admin/firestore";
-import { initializeApp } from "firebase-admin/app";
 import { Chatroom } from "./models/chatroom";
 import { Message } from "./models/message";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { AI } from "./ai";
 import { UserInfo } from "./models/userInfo";
-import { therapistPrompt, chatroomTitlePrompt, summaryPrompt, therapistShortPrompt } from "./promts";
+import { loadPrompts } from "./promts";
 // Initialize Firebase Admin
-initializeApp();
 
 const db = getFirestore();
 
@@ -39,7 +37,9 @@ export const talkWithTherapist = onCall(async (request) => {
         timestamp: new Date()
     });
 
-    const iaResponse: string | null = await generateTherapistMessage(therapistPrompt(userContext), messages);
+    const { therapist } = await loadPrompts(userContext);
+
+    const iaResponse: string | null = await generateTherapistMessage(therapist.full, messages);
 
     if (iaResponse) {
         messages.push({
@@ -85,22 +85,24 @@ export const createUpdateChatRoom = onCall(async (request) => {
         throw new Error('User not found');
     }
 
-    const iaDescription: string | null = await AI.reply(chatroomTitlePrompt(chatroom.userContext), 100);
+    const { chatroomTitle } = await loadPrompts(chatroom.userContext);
+    const iaDescription: string | null = await AI.reply(chatroomTitle, 100);
     chatroom.description = iaDescription ?? 'Your AI therapist';
     chatroom.userId = user.uid;
     chatroom.messages = [];
 
     log("!!!chatroom:", chatroom);
 
+    const { welcome, therapist } = await loadPrompts(chatroom.userContext);
     const messages: Message[] = [
         {
             id: '1',
-            content: 'Give me a message. Answer in the same language in which the question is asked. Make it short and concise (around 60 words).',
-            sender: 'user',
+            content: welcome,
+            sender: 'system',
             timestamp: new Date()
         }
     ];
-    const iaResponse: string | null = await generateTherapistMessage(therapistShortPrompt(chatroom.userContext), messages);
+    const iaResponse: string | null = await generateTherapistMessage(therapist.short, messages);
     if (iaResponse) {
         chatroom.messages.push({
             id: crypto.randomUUID(),
@@ -174,25 +176,26 @@ export const therapySummary = onCall(async (request) => {
     }
 
     const chatroom: Chatroom = chatroomDoc.data() as Chatroom;
+    const { summary, therapist } = await loadPrompts(chatroom.userContext);
 
     let messages: Message[] = chatroom.messages;
     messages.push({
         id: crypto.randomUUID(),
-        content: summaryPrompt(chatroom.userContext),
+        content: summary,
         sender: 'user',
         timestamp: new Date()
     });
 
-    const summary: string | null = await generateTherapistMessage(therapistShortPrompt(chatroom.userContext), messages);
+    const summaryTherapy: string | null = await generateTherapistMessage(therapist.short, messages);
 
-    if (!summary) {
+    if (!summaryTherapy) {
         throw new Error('Summary not generated');
     }
 
     messages = [
         {
             id: crypto.randomUUID(),
-            content: summary,
+            content: summaryTherapy,
             sender: 'system',
             timestamp: new Date()
         }

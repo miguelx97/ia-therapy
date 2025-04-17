@@ -1,19 +1,20 @@
-{
-  "therapists": [
-    {
-      "id": 1,
-      "image": "assets/therapists/therapist_1.webp",
-      "name": "Edward Johnson"
-    },
-    {
-      "id": 2,
-      "image": "assets/therapists/therapist_2.webp",
-      "name": "Emily Williams"
-    },
-    {
-      "id": 3,
-      "image": "assets/therapists/therapist_3.webp",
-      "name": "John Caldwell"
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "image": "https://firebasestorage.googleapis.com/v0/b/my-ai-therapy.firebasestorage.app/o/therapist_1.webp?alt=media",
+    "name": "Edward Johnson",
+    "personality": "warm, empathetic, and supportive"
+  },
+  {
+    "id": 2,
+    "image": "https://firebasestorage.googleapis.com/v0/b/my-ai-therapy.firebasestorage.app/o/therapist_2.webp?alt=media",
+    "name": "Emily Williams",
+    "personality": "intuitive, empathetic, and insightful"
+  },
+  {
+    "id": 3,
+    "image": "https://firebasestorage.googleapis.com/v0/b/my-ai-therapy.firebasestorage.app/o/therapist_3.webp?alt=media",
+    "name": "John Caldwell",
+    "personality": "thoughtful, empathetic, and supportive"
+  }
+]

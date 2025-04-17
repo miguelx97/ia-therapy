@@ -52,8 +52,8 @@
     <!-- Chat input area -->
     <div class="chat-input-container">
       <div class="input-wrapper">
-        <ion-textarea [(ngModel)]="newMessage" placeholder="Share what's on your mind..." class="message-input"
-          auto-grow="true" rows="1" (keydown)="onKeyDown($event)" [disabled]="isTyping">
+        <ion-textarea #messageInput [(ngModel)]="newMessage" placeholder="Share what's on your mind..."
+          class="message-input" auto-grow="true" rows="1" (keydown)="onKeyDown($event)" [disabled]="isTyping">
         </ion-textarea>
         <ion-button class="send-button" (click)="sendMessage()" [disabled]="isTyping">
           <ion-icon name="send-outline"></ion-icon>

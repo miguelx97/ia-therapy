@@ -27,6 +27,7 @@ import { firstValueFrom } from 'rxjs';
 import { close } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { UiService } from 'src/app/services/ui.service';
+import { delay } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-config',
@@ -93,7 +94,7 @@ export class ConfigPage implements OnInit {
   private async stopProgressAnimation() {
     clearInterval(this.progressInterval);
     this.progress = 1;
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await delay(1000);
     this.progress = null;
   }
 
