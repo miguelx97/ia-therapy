@@ -15,7 +15,7 @@ export class UiService {
   async showLoading(msg?: string) {
     this.loadingDialog = await this.loadingController.create({
       message: msg,
-      duration: 10000
+      duration: 20000
     });
     await this.loadingDialog.present();
   }

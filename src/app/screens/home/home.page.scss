@@ -156,6 +156,19 @@ ion-header {
       text-align: left;
     }
 
+    // Button labels styling
+    .button-label {
+      display: none;
+      margin-left: 4px;
+    }
+
+    // Show labels on larger screens
+    @media (min-width: 640px) {
+      .button-label {
+        display: inline-block;
+      }
+    }
+
     // User avatar in header
     ion-avatar {
       width: 32px;

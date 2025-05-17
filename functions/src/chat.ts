@@ -148,7 +148,11 @@ export const createUpdateChatRoom = onCall(async (request) => {
     // Check if chatroom already exists in userInfo.chatrooms
     const chatRoomInfo = {
         id: chatroomDoc.id,
-        description: chatroom.description
+        description: chatroom.description,
+        updatedAt: new Date(),
+        createdAt: chatroom.createdAt,
+        userContext: chatroom.userContext,
+        summary: ''
     }
     const existingChatroomIndex = userInfo.chatrooms.findIndex(cr => cr.id === chatRoomInfo.id);
 
